@@ -1,6 +1,6 @@
 import pygame
 import sys
-import random  # Importar el módulo random
+import random
 import time
 import numpy as np
 import re
@@ -11,7 +11,7 @@ from entity.board import Board
 from entity.messages import Messages
 
 
-# Configuración
+# Configuration
 GRID_SIZE = 10
 CELL_SIZE = 30
 SEPARATION = 300
@@ -59,7 +59,6 @@ class Game:
         self.war_ships[self.USER].generate_new_board(False)
         self.war_ships[self.COMPUTER].generate_new_board(False)
 
-
     def calculate_percentage(self, number1, number2):
         # Ensure the numbers are of float type for accurate calculation
         number1 = float(number1)
@@ -75,7 +74,7 @@ class Game:
 
         return formatted_result
 
-    #### Iniciazlze
+    #### initialize
 
     def initialize_war_ships(self):
         common_params = (
@@ -86,7 +85,6 @@ class Game:
             CELL_SIZE,
             OFFSET_WIDTH,
             OFFSET_HEIGHT,
-            True,
         )
         self.war_ships.append(Board(*common_params, "Computer 1"))
         self.war_ships.append(Board(*common_params, "Computer 2"))
@@ -98,7 +96,7 @@ class Game:
 
         if self.players != -1:
             font_score = pygame.font.Font(None, 28)
-            total = sum(ship.get_perdidos() for ship in self.war_ships)
+            total = sum(ship.get_game_lost() for ship in self.war_ships)
 
             elements = []
             for i in range(len(self.war_ships)):
@@ -109,7 +107,7 @@ class Game:
                         x_position + (GRID_SIZE * CELL_SIZE) + SEPARATION + CELL_SIZE
                     )
 
-                message = f"{self.war_ships[i].get_player(True)} Wins: {self.war_ships[1-i].get_perdidos()} {self.calculate_percentage(self.war_ships[1-i].get_perdidos(), total)} Shots: {self.war_ships[1-i].get_shots()} "
+                message = f"{self.war_ships[i].get_player(True)} Wins: {self.war_ships[1-i].get_game_lost()} {self.calculate_percentage(self.war_ships[1-i].get_game_lost(), total)} Shots: {self.war_ships[1-i].get_shots()} "
 
                 element = (
                     message,
@@ -124,17 +122,17 @@ class Game:
         return True
 
     def show_game_zone(self, visible_ships=[False, False]):
-        # Limpiar la pantalla
+        # clear screen
         self.screen.fill(BLACK)
 
-        # Dibujar las dos cuadrículas con separación, números y cabecera
+        # Draw the two grids with spacing, numbers and header.
         for i, self.war_ship in enumerate(self.war_ships):
             x_position = OFFSET_WIDTH + i * (
                 CELL_SIZE + GRID_SIZE * CELL_SIZE + SEPARATION
             )
             self.war_ship.show_game_zone(x_position, GRAY, visible_ships[i])
 
-        # Dibujar el cuadro en la zona de separación
+        # Draw the box in the buffer zone
         pygame.draw.rect(
             self.screen,
             WHITE,
@@ -177,11 +175,10 @@ class Game:
 
         self.messages.draw_elements(elements)
 
-    def change_turn(self,turn):
-        return  self.COMPUTER if turn == self.USER else self.USER
+    def change_turn(self, turn):
+        return self.COMPUTER if turn == self.USER else self.USER
 
-
-    ## read keuboard
+    ## read keyboard
 
     def read_keyboard(self, time, pos, prompt, text, length):
         # process key presses and build a name
@@ -235,7 +232,7 @@ class Game:
             )
 
             for event in pygame.event.get():
-                if  event.type == pygame.QUIT:
+                if event.type == pygame.QUIT:
                     running = False
                 if pygame.key.get_pressed()[pygame.K_ESCAPE]:
                     game_mode == "start page"
@@ -378,7 +375,7 @@ class Game:
                 elif keys[pygame.K_SPACE] or elapsed_time >= 20:
                     game_mode = "start page"
 
-            elif game_mode== "game new":
+            elif game_mode == "game new":
                 self.messages.clear()
                 pygame.key.start_text_input()
                 turn = random.choice([self.USER, self.COMPUTER])
@@ -410,26 +407,23 @@ class Game:
                         y < 5 + OFFSET_HEIGHT
                         or y > GRID_SIZE * CELL_SIZE + 45 + OFFSET_HEIGHT
                     ):
-                        cuadricula = "Fuera de las Cuadrículas y separcion"
-                        letra = "N/A"
-                        numero = "N/A"
+                        grid = "Out of Grids and separations"
+                        letter = "N/A"
+                        number = "N/A"
                     elif x < OFFSET_WIDTH + CELL_SIZE + GRID_SIZE * CELL_SIZE:
-                        cuadricula = "Primera Cuadrícula"
+                        grid = "First Grid"
                         x -= OFFSET_WIDTH
-                        letra = chr(65 + x // CELL_SIZE - 1)
-                        numero = (y - OFFSET_HEIGHT - CELL_SIZE) // CELL_SIZE + 1
+                        letter = chr(65 + x // CELL_SIZE - 1)
+                        number = (y - OFFSET_HEIGHT - CELL_SIZE) // CELL_SIZE + 1
 
                     elif (
                         x >= OFFSET_WIDTH + CELL_SIZE + GRID_SIZE * CELL_SIZE
                         and x
-                        < OFFSET_WIDTH
-                        + CELL_SIZE
-                        + GRID_SIZE * CELL_SIZE
-                        + SEPARATION
+                        < OFFSET_WIDTH + CELL_SIZE + GRID_SIZE * CELL_SIZE + SEPARATION
                     ):
-                        cuadricula = "Dentro de la separacion"
-                        letra = "N/A"
-                        numero = "N/A"
+                        grid = "Inside the separation"
+                        letter = "N/A"
+                        number = "N/A"
                     elif (
                         x
                         < OFFSET_WIDTH
@@ -439,7 +433,7 @@ class Game:
                         + CELL_SIZE
                         + GRID_SIZE * CELL_SIZE
                     ):
-                        cuadricula = "Segunda Cuadrícula"
+                        grid = "Second Grid"
                         x -= (
                             OFFSET_WIDTH
                             + SEPARATION
@@ -448,24 +442,24 @@ class Game:
                         )
                         xx = x // CELL_SIZE - 1
                         yy = (y - 40 - CELL_SIZE) // CELL_SIZE
-                        numero = yy + 1
-                        letra = letra = chr(65 + xx)
+                        number = yy + 1
+                        letter = chr(65 + xx)
                     else:
-                        cuadricula = "Fuera de las Cuadrículas"
-                        letra = "N/A"
-                        numero = "N/A"
+                        grid = "Off the Grids"
+                        letter = "N/A"
+                        number = "N/A"
 
                     print(
-                        f"({y},{x}  {yy}, {xx}   Clic en {cuadricula}: Letra {letra}, Número {numero}"
+                        f"({y},{x}  {yy}, {xx}   Click en {grid}: Letter {letter}, Number {number}"
                     )
 
                 if (yy, xx) != Board.NO_SHOT:
                     self.war_ships[turn].plus_shot()
-                    disparo = chr(65 + xx) + f"{(yy+1) % 10}"
+                    coordinates = chr(65 + xx) + f"{(yy+1) % 10}"
                     player = self.war_ships[turn].get_player()
-                    estado = ""
+                    status = ""
                     if self.war_ships[last_turn].get_status(yy, xx) == Board.SHIP:
-                        estado = "hit"
+                        status = "hit"
                         self.war_ships[last_turn].set_status(yy, xx, Board.HIT_SHIP)
                         self.show_game_zone(
                             [
@@ -477,7 +471,7 @@ class Game:
                         pygame.display.flip()
                         sunk = self.war_ships[last_turn].check_if_sunk((yy, xx))
                         if sunk is not None:
-                            estado = f"sunk {sunk}"
+                            status = f"sunk {sunk}"
                         elif self.players == 0 or turn == self.COMPUTER:
                             shot = (yy, xx)
                             self.war_ships[turn].set_last_shot(shot, last_direction)
@@ -487,25 +481,25 @@ class Game:
                         anotherShot = True
 
                     elif self.war_ships[last_turn].get_status(yy, xx) == Board.EMP_SHIP:
-                        estado = "water"
+                        status = "water"
                         self.war_ships[last_turn].set_status(yy, xx, Board.HIT_WATER)
                     elif (
                         self.war_ships[last_turn].get_status(yy, xx) == Board.HIT_WATER
                     ):
-                        estado = "water"
+                        status = "water"
                     else:
-                        estado = "error"
+                        status = "error"
 
                     not_sunk2 = self.war_ships[turn].no_hits_ship()
                     not_sunk = self.war_ships[last_turn].no_hits_ship()
-                    tocados = self.war_ships[last_turn].hits_ship()
+                    touched = self.war_ships[last_turn].hits_ship()
 
                     print(
-                        f"{player} {disparo} {estado} last_turn ---> {last_turn} {not_sunk} {not_sunk + tocados} turn {turn} {not_sunk2}"
+                        f"{player} {coordinates} {status} last_turn ---> {last_turn} {not_sunk} {not_sunk + touched} turn {turn} {not_sunk2}"
                     )
-                    self.messages.add_message(f"{player} {disparo} {estado}")
+                    self.messages.add_message(f"{player} {coordinates} {status}")
 
-                    # Verificar si todo está hundido
+                    # Check if everything is sunk
                     if not_sunk == 0:
                         self.messages.add_message(player + " win.")
                         start_time = pygame.time.get_ticks()
@@ -516,28 +510,22 @@ class Game:
 
                     (yy, xx) = Board.NO_SHOT
 
-            # escribir mensajes
+            # write messages
             self.messages.draw_messages()
             self.show_scores()
             self.clock.tick(self.FPS)
-            # Actualizar la pantalla
+            # Refresh the screen
             pygame.display.flip()
             prev_time = time + 0
 
 
 ### Main Program
 if __name__ == "__main__":
-    # Inicializar Pygame
     pygame.display.init()
     pygame.font.init()
-
     disp_size = (WIDTH + OFFSET_WIDTH * 2, HEIGHT + OFFSET_HEIGHT * 2)
-
-    # Crear la pantalla
     screen = pygame.display.set_mode(disp_size)
     pygame.display.set_caption("War ships")
     Game(screen).run()
-
-    # Fin del programa
     pygame.quit()
     exit()

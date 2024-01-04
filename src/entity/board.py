@@ -15,25 +15,25 @@ class Board:
         HIT_WATER,
         SHIP,
         HIT_SHIP,
-        HIT_SHUNK,
+        HIT_SUNK,
         HIT_WATER_TMP,
         SHIP_TMP,
-        HIT_SHURNK_TMP,
+        HIT_SUNK_TMP,
     ) = (
-        " ",
-        "A",
-        "X",
-        "T",
-        "H",
-        "a",
-        "x",
-        "h",
+        ' ',
+        'A',
+        'X',
+        'T',
+        'H',
+        'a',
+        'x',
+        'h',
     )
 
     NO_DIRECTION = (-1, -1)
     NO_SHOT = (-1, -1)
     NEW_SHOT = (-99, -99)
-    ORIENTATIONS = ["horizontal", "vertical"]
+    ORIENTATIONS = ['horizontal', 'vertical']
 
 
      
@@ -46,7 +46,6 @@ class Board:
         cell_size,
         offset_weight,
         offset_height,
-        auto,
         player
     ):
         
@@ -78,7 +77,7 @@ class Board:
         return matrix
 
     def show_game_zone(self, x_offset, color, visible_ships=False):
-        # Dibujar las letras en la cabecera
+        # Draw the letters on the header
         for i in range(self.cols):
             font = pygame.font.Font(None, 36)
             text = font.render(self.letters[i], True, color)
@@ -128,7 +127,7 @@ class Board:
                         2,
                     )
 
-        # Dibujar los números a la izquierda de la cuadrícula
+        # Draw the numbers to the left of the grid.
         for i in range(self.rows):
             font = pygame.font.Font(None, 36)
             text = font.render(str((i + 1) % 10), True, color)
@@ -138,7 +137,7 @@ class Board:
 
     def put_water(self, shot):
         row, column = shot
-        if self._board[row][column] not in (self.HIT_SHIP, self.HIT_SHUNK):
+        if self._board[row][column] not in (self.HIT_SHIP, self.HIT_SUNK):
             return False
         ok = True
         directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
@@ -146,8 +145,8 @@ class Board:
             new_row, new_column = row + dx, column + dy
             if 0 <= new_row < self.rows and 0 <= new_column < self.cols:
                 if self._board[new_row][new_column] == self.EMP_SHIP:
-                    self._board[new_row][new_column] = self.HIT_WATER
-                elif self._board[new_row][new_column] != self.HIT_WATER:
+                    self._board[new_row][new_column] = self.HIT_WATER_TMP
+                elif self._board[new_row][new_column] not in (self.HIT_WATER,self.HIT_WATER_TMP):
                     ok = False
                     break
         if ok:
@@ -180,20 +179,20 @@ class Board:
         for row in range(x1, x2 + 1):
             for col in range(y1, y2 + 1):
                 if 0 <= row < self.rows and 0 <= col < self.cols:
-                    # print( f"{(row,col)},({self._board[row][col]})")
+                    # print( f'{(row,col)},({self._board[row][col]})')
                     if self._board[row][col] == old_value:
                         self._board[row][col] = new_value
 
     def check_if_sunk(self, shot):
         # row, column = shot
-        shunk = None
+        sunk = None
         # ship_value = self._board[row][column]
         left_row, left_column = self._seek(shot, (-1, 0))
         right_row, right_column = self._seek(shot, (1, 0))
         top_row, top_column = self._seek(shot, (0, -1))
         bottom_row, bottom_column = self._seek(shot, (0, 1))
         if -99 in (left_row, right_row, top_column, bottom_column):
-            return shunk
+            return sunk
 
         difCol = bottom_column - top_column
         difRow = right_row - left_row
@@ -202,7 +201,8 @@ class Board:
             dif = difRow
         else:
             dif = difCol
-        sunk = self._ships["ships"][len(self._ships["ships"]) - 1 - (dif - 2)]["ship"]
+        #print(len(self._ships['ships']),dif ,len(self._ships['ships']) - 1 - (dif - 2 ))
+        sunk = self._ships['ships'][len(self._ships['ships']) - 1 - (dif - 2)]['ship']
         self._fill_board(
             (left_row, top_column),
             (right_row, bottom_column),
@@ -217,17 +217,17 @@ class Board:
     def get_game_lost(self):
         return self._game_lost
 
-    def set_last_shot(self, shot, last_direcction):
-        if len(last_direcction) != 2:
-            last_direcction = self.NO_DIRECTION
-        self._last_shots.append((shot, last_direcction))
+    def set_last_shot(self, shot, last_direction):
+        if len(last_direction) != 2:
+            last_direction = self.NO_DIRECTION
+        self._last_shots.append((shot, last_direction))
 
     def get_last_shot(self):
         last = self.NO_SHOT
-        last_direcction = self.NO_DIRECTION
+        last_direction = self.NO_DIRECTION
         if len(self._last_shots) > 0:
-            last, last_direcction = self._last_shots.pop()
-        return last, last_direcction
+            last, last_direction = self._last_shots.pop()
+        return last, last_direction
 
     
     def new_shot(self, shot, last_direction):
@@ -240,7 +240,7 @@ class Board:
         if self.no_hits_ship() == 0:
             return -1, -1, -1
 
-        # Definir directions para buscar (arriba, abajo, izquierda, derecha)
+        # Define directions to search (up, down, left, right)
         if last_direction == self.NO_DIRECTION:
             directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
             random.shuffle(directions)
@@ -270,25 +270,25 @@ class Board:
                 else:
                     return new_yy, new_xx, (dy, dx)
 
-        return -1, -1, -1  # No se encontró otro 3 en las celdas adyacentes
+        return -1, -1, -1 
 
     def shot_computer(self):
-        vueltas = 0
-        while vueltas < 1000:
-            vueltas += 1
-            fila = random.randint(0, self.rows - 1)
-            columna = random.randint(0, self.cols - 1)
+        laps = 0
+        while laps < 1000:
+            laps += 1
+            row = random.randint(0, self.rows - 1)
+            col = random.randint(0, self.cols - 1)
 
             if (
-                self._board[fila][columna] != Board.HIT_WATER
-                and self._board[fila][columna] != Board.HIT_SHIP
+                self._board[row][col] != Board.HIT_WATER
+                and self._board[row][col] != Board.HIT_SHIP
             ):
-                return fila, columna, self.NO_DIRECTION
+                return row, col, self.NO_DIRECTION
 
-        for fila in range(len(self._board)):
-            for columna in range(len(self._board[0])):
-                if self._board[fila][columna] in (Board.EMP_SHIP, Board.SHIP):
-                    return fila, columna, self.NO_DIRECTION
+        for row in range(len(self._board)):
+            for col in range(len(self._board[0])):
+                if self._board[row][col] in (Board.EMP_SHIP, Board.SHIP):
+                    return row, col, self.NO_DIRECTION
 
         return -1, -1, self.NO_DIRECTION
 
@@ -302,14 +302,14 @@ class Board:
     def get_player(self, clean = False):
         if clean:
             temp=self._player
-            return temp.replace(".","")
+            return temp.replace('.','')
         return self._player
 
     def set_player(self,player):
         self._player=player
         if len(self._player) > 8:
            self._player=self._player[:8]
-        self._player=self._player.ljust(8, ".")
+        self._player=self._player.ljust(8, '.')
 
 
     def get_status(self, row, col):
@@ -445,10 +445,10 @@ class Board:
 
     def _generate_ships(self):
         matrix_ships = []
-        for ship in self._ships["ships"]:
-            length = ship["length"]
+        for ship in self._ships['ships']:
+            length = ship['length']
             ship_generated = self._generate_matrix(3, length + 2)
-            for x in range(ship["quantity"]):
+            for x in range(ship['quantity']):
                 matrix_ships.append(ship_generated)
         self._ships_work = matrix_ships
 
@@ -461,27 +461,29 @@ class Board:
     def length(self):
         return len(self._ships_work)
 
+    def get_ships_work(self):
+        return self._ships_work
+
     def get_ship_name(self, length):
-        for ship_info in self._ships["ships"]:
-            if ship_info["length"] == length:
-                return ship_info["ship"]
+        for ship_info in self._ships['ships']:
+            if ship_info['length'] == length:
+                return ship_info['ship']
         return None
 
     def quantity_ships(self, iterate):
-        if not self._ships["ships"] or not isinstance(iterate, int):
-            return None  # Manejar casos inválidos
+        if not self._ships['ships'] or not isinstance(iterate, int):
+            return None  # Handling invalid cases
 
         total_length = 0
-        for index, ship_info in enumerate(self._ships["ships"]):
-            total_length += ship_info.get("quantity", 0)
+        for index, ship_info in enumerate(self._ships['ships']):
+            total_length += ship_info.get('quantity', 0)
 
             if iterate < total_length:
-                break  # Detener la suma cuando alcance la posición indicada
+                break  # Stop the addition when it reaches the indicated position.
 
         return index
 
     def _generate_board(self):
-        # board = np.full((m, n), ".", dtype=str)
         for ship in self._ships_work:
             placed = False
             while not placed:
@@ -491,16 +493,16 @@ class Board:
         )
 
     def show_board(self):
-        print("*" * 20)
-        print(" ", end=" ")
+        print('*' * 20)
+        print(' ', end=' ')
         for i in range(0, 10):
-            print(i % 10, end=" ")
+            print(i % 10, end=' ')
         print()
         i = 0
         for row in self._board:
-            print(i % 10, " ".join(row))
+            print(i % 10, ' '.join(row))
             i += 1
-        print("*" * 20)
+        print('*' * 20)
 
     def _count_cells(self, target_value):
         return sum(1 for row in self._board for cell in row if cell == target_value)
