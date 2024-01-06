@@ -269,7 +269,7 @@ class Game:
                         },
                         {
                             "key": "ships",
-                            "question": "Ships autommatic? Y/N:",
+                            "question": "Ships automatic? Y/N:",
                             "length": 1,
                             "regex": "([YNS])",
                             "iterate": 1,
@@ -277,8 +277,8 @@ class Game:
                             "default": "Y",
                         },
                         {
-                            "key": "postion",
-                            "question": "Positon Ship %1:",
+                            "key": "position",
+                            "question": "Position Ship %1:",
                             "length": 3,
                             "regex": "([A-J][0-9][HV])",
                             "iterate": 10,
@@ -303,7 +303,7 @@ class Game:
                     )
                     start_time = pygame.time.get_ticks()
                     end = True
-                elif questions["key"] == "postion":
+                elif questions["key"] == "position":
                     length = self.war_ships[self.USER].length()
                     index = self.war_ships[self.USER].quantity_ships(iterate)
                     name = self.war_ships[self.USER].get_ship_name(
@@ -354,7 +354,7 @@ class Game:
                             self.war_ships[self.USER].generate_new_board(True)
                             self.war_ships[self.COMPUTER].generate_new_board(True)
                             game_mode = "game new"
-                    elif questions["key"] == "postion":
+                    elif questions["key"] == "position":
                         if self.war_ships[self.USER].place_ship_user(
                             iterate, text[0], text[1], text[2]
                         ):
@@ -523,8 +523,8 @@ class Game:
 if __name__ == "__main__":
     pygame.display.init()
     pygame.font.init()
-    disp_size = (WIDTH + OFFSET_WIDTH * 2, HEIGHT + OFFSET_HEIGHT * 2)
-    screen = pygame.display.set_mode(disp_size)
+    display_size = (WIDTH + OFFSET_WIDTH * 2, HEIGHT + OFFSET_HEIGHT * 2)
+    screen = pygame.display.set_mode(display_size)
     pygame.display.set_caption("War ships")
     Game(screen).run()
     pygame.quit()
