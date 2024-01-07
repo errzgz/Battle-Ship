@@ -1,12 +1,10 @@
 import pygame
 import sys
 import random
-import time
-import numpy as np
 import re
 
 
-from utils.constants import *
+from utils.constants import SHIPS, BLACK, WHITE, RED, GRAY
 from entity.board import Board
 from entity.messages import Messages
 
