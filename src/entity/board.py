@@ -9,7 +9,7 @@ class Board:
     RED = (255, 0, 0)
     WHITE = (255, 255, 255)
     GREEN = (0, 255, 0)
-    
+
     (
         EMP_SHIP,
         HIT_WATER,
@@ -20,23 +20,21 @@ class Board:
         SHIP_TMP,
         HIT_SUNK_TMP,
     ) = (
-        ' ',
-        'A',
-        'X',
-        'T',
-        'H',
-        'a',
-        'x',
-        'h',
+        " ",
+        "A",
+        "X",
+        "T",
+        "H",
+        "a",
+        "x",
+        "h",
     )
 
     NO_DIRECTION = (-1, -1)
     NO_SHOT = (-1, -1)
     NEW_SHOT = (-99, -99)
-    ORIENTATIONS = ['horizontal', 'vertical']
+    ORIENTATIONS = ["horizontal", "vertical"]
 
-
-     
     def __init__(
         self,
         screen,
@@ -46,9 +44,8 @@ class Board:
         cell_size,
         offset_weight,
         offset_height,
-        player
+        player,
     ):
-        
         self._letters = None
         self._cell_size = 0
         self._screen = None
@@ -67,9 +64,19 @@ class Board:
         self.offset_height = offset_height
         self._player = player
         self.generate_new_board(False)
-        
 
-        
+    @property
+    def game_lost(self):
+        return self._game_lost
+
+    @game_lost.setter
+    def game_lost(self, new_game_lost):
+        self._game_lost = new_game_lost
+
+    @game_lost.deleter
+    def game_lost(self):
+        self.game_lost = 0
+
     def _generate_matrix(self, rows, columns):
         matrix = [[self.HIT_WATER_TMP for _ in range(columns)] for _ in range(rows)]
         for j in range(1, columns - 1):
@@ -83,7 +90,7 @@ class Board:
             text = font.render(self.letters[i], True, color)
             self.screen.blit(
                 text,
-                (x_offset + (i + 1) * self._cell_size , 5 + self.offset_weight),
+                (x_offset + (i + 1) * self._cell_size, 5 + self.offset_weight),
             )
 
         for i in range(self.rows):
@@ -146,16 +153,19 @@ class Board:
             if 0 <= new_row < self.rows and 0 <= new_column < self.cols:
                 if self._board[new_row][new_column] == self.EMP_SHIP:
                     self._board[new_row][new_column] = self.HIT_WATER_TMP
-                elif self._board[new_row][new_column] not in (self.HIT_WATER,self.HIT_WATER_TMP):
+                elif self._board[new_row][new_column] not in (
+                    self.HIT_WATER,
+                    self.HIT_WATER_TMP,
+                ):
                     ok = False
                     break
         if ok:
-            matrix = [
+            self._board = [
                 [self.HIT_WATER if cell == self.HIT_WATER_TMP else cell for cell in row]
                 for row in self._board
             ]
         else:
-            board = [
+            self._board = [
                 [self.EMP_SHIP if cell == self.HIT_WATER_TMP else cell for cell in row]
                 for row in self._board
             ]
@@ -201,8 +211,8 @@ class Board:
             dif = difRow
         else:
             dif = difCol
-        #print(len(self._ships['ships']),dif ,len(self._ships['ships']) - 1 - (dif - 2 ))
-        sunk = self._ships['ships'][len(self._ships['ships']) - 1 - (dif - 2)]['ship']
+        # print(len(self._ships['ships']),dif ,len(self._ships['ships']) - 1 - (dif - 2 ))
+        sunk = self._ships["ships"][len(self._ships["ships"]) - 1 - (dif - 2)]["ship"]
         self._fill_board(
             (left_row, top_column),
             (right_row, bottom_column),
@@ -213,9 +223,6 @@ class Board:
         if self.no_hits_ship() == 0:
             self._game_lost += 1
         return sunk
-
-    def get_game_lost(self):
-        return self._game_lost
 
     def set_last_shot(self, shot, last_direction):
         if len(last_direction) != 2:
@@ -229,9 +236,7 @@ class Board:
             last, last_direction = self._last_shots.pop()
         return last, last_direction
 
-    
     def new_shot(self, shot, last_direction):
-
         if shot in (self.NO_SHOT, self.NEW_SHOT):
             return self.shot_computer()
 
@@ -270,7 +275,7 @@ class Board:
                 else:
                     return new_yy, new_xx, (dy, dx)
 
-        return -1, -1, -1 
+        return -1, -1, -1
 
     def shot_computer(self):
         laps = 0
@@ -292,28 +297,26 @@ class Board:
 
         return -1, -1, self.NO_DIRECTION
 
-
     def plus_shot(self):
         self._shots += 1
 
     def get_shots(self):
         return self._shots
 
-    def get_player(self, clean = False):
+    def get_player(self, clean=False):
         if clean:
-            temp=self._player
-            return temp.replace('.','')
+            temp = self._player
+            return temp.replace(".", "")
         return self._player
 
-    def set_player(self,player):
-        self._player=player
+    def set_player(self, player):
+        self._player = player
         if len(self._player) > 8:
-           self._player=self._player[:8]
-        self._player=self._player.ljust(8, '.')
-
+            self._player = self._player[:8]
+        self._player = self._player.ljust(8, ".")
 
     def get_status(self, row, col):
-        if 0 <=row < len(self._board) and 0<=col < len(self._board[0]):
+        if 0 <= row < len(self._board) and 0 <= col < len(self._board[0]):
             return self._board[row][col]
         else:
             return self.NO_SHOT
@@ -323,11 +326,11 @@ class Board:
 
     def generate_new_board(self, auto):
         self._last_shots = []
-        self._shots=0
+        self._shots = 0
         self._board = np.full((self.rows, self.cols), self.EMP_SHIP, dtype=str)
         if auto:
             self._generate_board()
-        
+
     def is_valid_placement(self, orientation, ship, row, col):
         if (
             orientation == self.ORIENTATIONS[0]
@@ -378,7 +381,7 @@ class Board:
                     and self._board[row][col] == self.SHIP
                 ):
                     follow = True
-            orientations =self.ORIENTATIONS.copy()
+            orientations = self.ORIENTATIONS.copy()
             random.shuffle(orientations)
             for orientation in orientations:
                 repeat = not self._place_ship(ship, row, col, orientation)
@@ -386,13 +389,20 @@ class Board:
                     break
         return True
 
-    def place_ship_user(self, iterate, colLetter, rowNumber,  orientation):
+    def place_ship_user(self, iterate, colLetter, rowNumber, orientation):
         row = 9 if int(rowNumber) == 0 else int(rowNumber) - 1
         col = ord(colLetter.upper()) - 65
-        ship=self.get_ship(iterate)
-        row-=1
-        col-=1
-        return self._place_ship(ship, row, col, self.ORIENTATIONS[ 0 if orientation.upper() == self.ORIENTATIONS[0][0].upper() else 1])
+        ship = self.get_ship(iterate)
+        row -= 1
+        col -= 1
+        return self._place_ship(
+            ship,
+            row,
+            col,
+            self.ORIENTATIONS[
+                0 if orientation.upper() == self.ORIENTATIONS[0][0].upper() else 1
+            ],
+        )
 
     def _place_ship(self, ship, row, col, orientation):
         placed = False
@@ -442,13 +452,12 @@ class Board:
 
         return placed
 
-
     def _generate_ships(self):
         matrix_ships = []
-        for ship in self._ships['ships']:
-            length = ship['length']
+        for ship in self._ships["ships"]:
+            length = ship["length"]
             ship_generated = self._generate_matrix(3, length + 2)
-            for x in range(ship['quantity']):
+            for x in range(ship["quantity"]):
                 matrix_ships.append(ship_generated)
         self._ships_work = matrix_ships
 
@@ -465,18 +474,18 @@ class Board:
         return self._ships_work
 
     def get_ship_name(self, length):
-        for ship_info in self._ships['ships']:
-            if ship_info['length'] == length:
-                return ship_info['ship']
+        for ship_info in self._ships["ships"]:
+            if ship_info["length"] == length:
+                return ship_info["ship"]
         return None
 
     def quantity_ships(self, iterate):
-        if not self._ships['ships'] or not isinstance(iterate, int):
+        if not self._ships["ships"] or not isinstance(iterate, int):
             return None  # Handling invalid cases
 
         total_length = 0
-        for index, ship_info in enumerate(self._ships['ships']):
-            total_length += ship_info.get('quantity', 0)
+        for index, ship_info in enumerate(self._ships["ships"]):
+            total_length += ship_info.get("quantity", 0)
 
             if iterate < total_length:
                 break  # Stop the addition when it reaches the indicated position.
@@ -493,16 +502,16 @@ class Board:
         )
 
     def show_board(self):
-        print('*' * 20)
-        print(' ', end=' ')
+        print("*" * 20)
+        print(" ", end=" ")
         for i in range(0, 10):
-            print(i % 10, end=' ')
+            print(i % 10, end=" ")
         print()
         i = 0
         for row in self._board:
-            print(i % 10, ' '.join(row))
+            print(i % 10, " ".join(row))
             i += 1
-        print('*' * 20)
+        print("*" * 20)
 
     def _count_cells(self, target_value):
         return sum(1 for row in self._board for cell in row if cell == target_value)

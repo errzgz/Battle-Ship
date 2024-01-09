@@ -94,7 +94,7 @@ class Game:
 
         if self.players != -1:
             font_score = pygame.font.Font(None, 28)
-            total = sum(ship.get_game_lost() for ship in self.war_ships)
+            total = sum(ship.game_lost for ship in self.war_ships)
 
             elements = []
             for i in range(len(self.war_ships)):
@@ -105,7 +105,7 @@ class Game:
                         x_position + (GRID_SIZE * CELL_SIZE) + SEPARATION + CELL_SIZE
                     )
 
-                message = f"{self.war_ships[i].get_player(True)} Wins: {self.war_ships[1-i].get_game_lost()} {self.calculate_percentage(self.war_ships[1-i].get_game_lost(), total)} Shots: {self.war_ships[1-i].get_shots()} "
+                message = f"{self.war_ships[i].get_player(True)} Wins: {self.war_ships[1-i].game_lost} {self.calculate_percentage(self.war_ships[1-i].game_lost, total)} Shots: {self.war_ships[1-i].get_shots()} "
 
                 element = (
                     message,
@@ -481,12 +481,13 @@ class Game:
                     elif self.war_ships[last_turn].get_status(yy, xx) == Board.EMP_SHIP:
                         status = "water"
                         self.war_ships[last_turn].set_status(yy, xx, Board.HIT_WATER)
-                    elif (
-                        self.war_ships[last_turn].get_status(yy, xx) == Board.HIT_WATER
-                    ):
-                        status = "water"
+                    elif self.war_ships[last_turn].get_status(yy, xx) == Board.HIT_WATER:
+                        status = "water again"
                     else:
+                        self.war_ships[last_turn].show_board()
                         status = "error"
+                        
+
 
                     not_sunk2 = self.war_ships[turn].no_hits_ship()
                     not_sunk = self.war_ships[last_turn].no_hits_ship()
