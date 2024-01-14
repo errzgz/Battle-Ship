@@ -161,15 +161,34 @@ class TestGenerateBoard(unittest.TestCase):
         player = board.get_player(True)
         assert_that(name_player == player).is_false()
 
-    def test_last_shot(self):
         board = Board(*TestGenerateBoard.base(SHIPS), "Computer 1")
         yy, xx, last_direction = board.new_shot(Board.NO_SHOT, Board.NEW_SHOT)
-        board.set_last_shot((yy, xx), last_direction)
-        board.set_last_shot(Board.NEW_SHOT, Board.NO_DIRECTION)
-        shot = board.get_last_shot()
-        assert_that(shot == (Board.NEW_SHOT, Board.NO_DIRECTION)).is_true()
-        shot = board.get_last_shot()
-        assert_that(shot == ((yy, xx), Board.NO_DIRECTION)).is_true()
+        if board.get_status_grid(yy, xx) == Board.SHIP:
+            status = "hit"
+            sunk = board.check_if_sunk((yy, xx))
+            if sunk is not None:
+                status = f"sunk {sunk}"
+        elif board.get_status_grid(yy, xx) == Board.EMP_SHIP:
+            status = "water"
+        elif status.get_status_grid(yy, xx) == Board.HIT_WATER:
+            status = "water again"
+        else:
+            status = "error"
+
+        board.set_last_shot((yy, xx), last_direction, status)
+        board.set_last_shot(Board.NEW_SHOT, Board.NO_DIRECTION, Board.NO_STATUS)
+        shot, last_direction, last_status = board.get_last_shot()
+        assert_that(
+            (shot, last_direction, last_status)
+            == (Board.NEW_SHOT, Board.NO_DIRECTION, Board.NO_STATUS)
+        ).is_true()
+
+        shot, last_direction, last_status = board.get_last_shot()
+        print(shot, last_direction, last_status)
+        assert_that(
+            (shot, last_direction, last_status)
+            == ((yy, xx), Board.NO_DIRECTION, status)
+        ).is_true()
 
     def test_plus_shot(self):
         board = Board(*TestGenerateBoard.base(SHIPS), "Computer 1")
@@ -211,30 +230,21 @@ class TestGenerateBoard(unittest.TestCase):
         assert_that(board.quantity_ships(9) == 3).is_true()
 
     def test_generate_new_board(self):
-        """
-        a
-        Validamos todos estos métodos
-        def generate_new_board(self, auto):
-        def is_valid_placement(self, orientation, ship, row, col):
-        def place_ships_automatic(self, ship):
-        def place_ship_user(self, iterate, colLetter, rowNumber,  orientation):
-        def get_status(self, row, col):
-        """
         ships = TestGenerateBoard.SHIPS4
-        for x in range(0, 100):
+        for x in range(0, 1000):
             board = Board(*TestGenerateBoard.base(ships), "Computer 1")
             board.generate_new_board(True)
-            board.show_board()
             ok = True
             rows = TestGenerateBoard.GRID_SIZE
             cols = TestGenerateBoard.GRID_SIZE
             for row in range(0, rows):
                 for column in range(0, cols):
-                    if board.get_status(row, column) == Board.SHIP:
-                        board.set_status(row, column, Board.HIT_SHIP)
-                        ok=board.put_water((row, column))
+                    if board.get_status_grid(row, column) == Board.SHIP:
+                        board.set_status_grid(row, column, Board.HIT_SHIP)
+                        ok = board.put_water((row, column))
                         if not ok:
-                            print (row,column)
+                            print(row, column)
                             break
-            board.show_board()
+            if not ok:
+                board.show_board()
             assert_that(ok).is_true()
