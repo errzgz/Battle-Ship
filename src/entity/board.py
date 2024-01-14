@@ -32,7 +32,9 @@ class Board:
 
     NO_DIRECTION = (-1, -1)
     NO_SHOT = (-1, -1)
+    NO_STATUS="NO_STATUS"
     NEW_SHOT = (-99, -99)
+    
     ORIENTATIONS = ["horizontal", "vertical"]
 
     def __init__(
@@ -224,17 +226,18 @@ class Board:
             self._game_lost += 1
         return sunk
 
-    def set_last_shot(self, shot, last_direction):
+    def set_last_shot(self, shot, last_direction, status):
         if len(last_direction) != 2:
             last_direction = self.NO_DIRECTION
-        self._last_shots.append((shot, last_direction))
+        self._last_shots.append((shot, last_direction, status))
 
     def get_last_shot(self):
         last = self.NO_SHOT
         last_direction = self.NO_DIRECTION
+        status=""
         if len(self._last_shots) > 0:
-            last, last_direction = self._last_shots.pop()
-        return last, last_direction
+            last, last_direction, status = self._last_shots.pop()
+        return last, last_direction, status
 
     def new_shot(self, shot, last_direction):
         if shot in (self.NO_SHOT, self.NEW_SHOT):
@@ -315,13 +318,13 @@ class Board:
             self._player = self._player[:8]
         self._player = self._player.ljust(8, ".")
 
-    def get_status(self, row, col):
+    def get_status_grid(self, row, col):
         if 0 <= row < len(self._board) and 0 <= col < len(self._board[0]):
             return self._board[row][col]
         else:
             return self.NO_SHOT
 
-    def set_status(self, row, col, value):
+    def set_status_grid(self, row, col, value):
         self._board[row][col] = value
 
     def generate_new_board(self, auto):
